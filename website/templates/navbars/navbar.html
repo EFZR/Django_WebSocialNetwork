@@ -5,15 +5,21 @@
       <a href="#" class="navbar-brand"><img src="{% static 'website/logo.png' %}"
           style="width: 40px; height: auto;"></a>
       <ul class="navbar-nav">
+        {% if user.is_authenticated %}
         <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="#">Home</a>
+          <a class="nav-link" aria-current="page" href="{% url 'home' %}">Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Features</a>
+          <a class="nav-link" href="{% url 'post' %}">New Post</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Pricing</a>
+          <a href="{% url 'logout' %}" class="nav-link">Logout</a>
         </li>
+        {% else %}
+        <li class="nav-item">
+          <a href="{% url 'login' %}" class="nav-link">Login</a>
+        </li>
+        {% endif %}
       </ul>
     </div>
     <button class="btn btn-outline-primary">

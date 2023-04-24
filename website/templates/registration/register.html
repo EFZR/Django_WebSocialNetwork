@@ -1,5 +1,5 @@
 {% extends 'website/base.html' %}
-{% block title %} login {% endblock %}
+{% block title %} Register {% endblock %}
 {% load crispy_forms_tags %}
 {% block content %}
 <form method="POST">
@@ -8,5 +8,5 @@
   <button type="submit" class="btn btn-primary">Login</button>
 </form>
 <p class="text-center">Forgot your password? Click <a href="{%url 'password_reset'%}">here</a> &#9754;</p>
-<p class="text-center">Register Right <a href="{% url 'register' %}">here</a> &#9754;</p>
+<p class="text-center">Back to <a href="{% url 'login' %}">Login</a> &#9754;</p>
 {% endblock %}
