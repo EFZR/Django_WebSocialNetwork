@@ -83,10 +83,91 @@ class PostView(PermissionRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
+class DeletePostView(PermissionRequiredMixin, DeleteView):
+    template_name = 'website/delete_post.html'
+    model = Post
+    permission_required = 'website.delete_post'
+    success_url = reverse_lazy('home')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Post deleted successfully')
+        log.info(f'Post deleted by {self.request.user.username}')
+        return super().form_valid(form)
+
+
+class BanUserView(UserPassesTestMixin, TemplateView):
+    template_name = 'website/ban_user.html'
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='sudo').exists()
+
+    def get(self, request, *args: str, **kwargs):
+        if self.test_func():
+            return super().get(request, *args, **kwargs)
+        else:
+            messages.error(self.request, 'You are not allowed to do that')
+            return redirect('home')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user_to_ban'] = User.objects.get(pk=self.kwargs['pk'])
+        return context
+
+    def post(self, request, *args: str, **kwargs):
+        user = User.objects.get(pk=self.kwargs['pk'])
+        try:
+            group = Group.objects.get(name='default')
+            group.user_set.remove(user)
+        except:
+            pass
+
+        try:
+            group = Group.objects.get(name='sudo')
+            group.user_set.remove(user)
+        except:
+            pass
+
+        messages.success(self.request, 'User banned successfully')
+        log.info(
+            f'User {user.username} banned by {self.request.user.username}')
+
+        return redirect('home')
+
+
+class UnbanUserView(UserPassesTestMixin, TemplateView):
+    template_name = 'website/unban_user.html'
+
+    def test_func(self):
+        return self.request.user.groups.filter(name='sudo').exists()
+
+    def get(self, request, *args: str, **kwargs):
+        if self.test_func():
+            return super().get(request, *args, **kwargs)
+        else:
+            messages.error(self.request, 'You are not allowed to do that')
+            return redirect('home')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user_to_unban'] = User.objects.get(pk=self.kwargs['pk'])
+        return context
+
+    def post(self, request, *args: str, **kwargs):
+        user = User.objects.get(pk=self.kwargs['pk'])
+        group = Group.objects.get(name='default')
+        user.groups.add(group)
+
+        messages.success(self.request, 'User unbanned successfully')
+        log.info(
+            f'User {user.username} unbanned by {self.request.user.username}')
+        return redirect('home')
+
+
 def postLiked(request, pk):
     post = Post.objects.get(id=pk)
     if Like.objects.select_related('user').filter(user=request.user, post=post):
-        Like.objects.select_related('user').filter(user=request.user, post=post).delete()
+        Like.objects.select_related('user').filter(
+            user=request.user, post=post).delete()
         post.liked -= 1
         post.save()
     elif Dislike.objects.select_related('user').filter(user=request.user, post=post):
@@ -107,7 +188,8 @@ def postLiked(request, pk):
 def postDisliked(request, pk):
     post = Post.objects.get(id=pk)
     if Dislike.objects.select_related('user').filter(user=request.user, post=post):
-        Dislike.objects.select_related('user').filter(user=request.user, post=post).delete()
+        Dislike.objects.select_related('user').filter(
+            user=request.user, post=post).delete()
         post.disliked -= 1
         post.save()
     elif Like.objects.select_related('user').filter(user=request.user, post=post):
