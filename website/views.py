@@ -31,6 +31,7 @@ class HomeView(UserPassesTestMixin, TemplateView):
                     "content": post.content,
                     "liked": post.liked,
                     "disliked": post.disliked,
+                    "commented": post.commented,
                     "created_at": post.created_at,
                     "updated_at": post.updated_at,
                     "author": post.author,
@@ -92,6 +93,30 @@ class DeletePostView(PermissionRequiredMixin, DeleteView):
     def form_valid(self, form):
         messages.success(self.request, 'Post deleted successfully')
         log.info(f'Post deleted by {self.request.user.username}')
+        return super().form_valid(form)
+
+
+class CommentView(PermissionRequiredMixin, CreateView):
+    template_name = 'website/comment.html'
+    model = Comment
+    form_class = CommentForm
+    success_url = reverse_lazy('home')
+    permission_required = 'website.add_comment'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['post'] = Post.objects.get(pk=self.kwargs['pk'])
+        context['comments'] = Comment.objects.filter(post=self.kwargs['pk'])
+        return context
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        form.instance.post = Post.objects.get(pk=self.kwargs['pk'])
+        post = Post.objects.get(pk=self.kwargs['pk'])
+        post.commented += 1
+        post.save()
+        messages.success(self.request, 'Comment created successfully')
+        log.info(f'New comment created by {self.request.user.username}')
         return super().form_valid(form)
 
 

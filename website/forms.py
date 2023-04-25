@@ -20,6 +20,7 @@ class RegisterForm(UserCreationForm):
         model = User
         fields = ['username', 'email', 'password1', 'password2']
 
+
 class PostForm(forms.ModelForm):
 
     class Meta:
@@ -30,5 +31,14 @@ class PostForm(forms.ModelForm):
         max_length=100,
         required=True,
     )
+
+    content = forms.Textarea()
+
+
+class CommentForm(forms.ModelForm):
+
+    class Meta:
+        model = Comment
+        fields = ['content']
 
     content = forms.Textarea()

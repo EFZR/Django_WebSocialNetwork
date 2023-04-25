@@ -1,0 +1,34 @@
+{% extends 'website/base.html' %}
+{% load crispy_forms_tags %}
+{% block title %} Home {% endblock %}
+{% block content %}
+<form method="POST">
+  <div class="card">
+    <div class="card-header">
+      <a class="float-start text-decoration-none" href="{% url 'home' %}">&#9754; Back</a>
+      <h4 class="text-center"><i>Post: {{post.title}}</i></h4>
+    </div>
+    <div class="card-body">
+      {% if comments %}
+      {% for comment in comments %}
+      <div class="card border-warning mt-3 mb-3">
+        <div class="card-header">
+          {{comment.author}} <span class="text-muted float-end">{{comment.created_at|date:"d M, Y"}}</span>
+        </div>
+        <div class="card-body">
+          <p class="card-text">{{comment.content}}</p>
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p class="text-center">No comments yet!</p>
+      {% endif %}
+      {% csrf_token %}
+      {{form|crispy}}
+    </div>
+    <div class="card-footer text-center">
+      <button type="submit" class="btn btn-primary">Post</button><br>
+    </div>
+  </div>
+</form>
+{% endblock %}
