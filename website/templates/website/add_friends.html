@@ -1,0 +1,28 @@
+{% extends 'website/base.html' %}
+{% block title %} People {% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <div>
+      <a class="float-start text-decoration-none" href="{% url 'friends' %}">&#9754; Back</a>
+      <h3 class="text-center"><i>Add Friends</i></h3>
+    </div>
+  </div>
+  <div class="card-body">
+    <ul class="list-group list-group-flush">
+      {% for person in persons %}
+      <li class="list-group-item">
+        <div class="d-flex justify-content-between align-items-center">
+          <a href="#" class=" text-decoration-none">{{person.username}}</a>
+          <form method="post" action="{% url 'add_friends' %}">
+            {% csrf_token %}
+            <input type="hidden" name="user_id" value="{{person.id}}">
+            <input type="submit" value="Add" class="btn btn-success btn-sm">
+          </form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin, PermissionRequiredMixin
+from django.db.models import Q
 from website.forms import *
 from website.models import *
 from Logging.Logger_Base import log
@@ -39,13 +40,14 @@ class HomeView(UserPassesTestMixin, TemplateView):
                     "dislike": True if Dislike.objects.select_related('post').filter(user=self.request.user, post=post) else False
                 }
             )
-
         context['posts'] = posts
-
         return context
 
     def test_func(self):
-        return self.request.user.groups.filter(name__in=self.group_required).exists()
+        if self.request.user.groups.filter(name__in=self.group_required).exists() and self.request.user.is_authenticated:
+            return True
+        else:
+            return False
 
 
 class RegisterView(FormView):
@@ -96,6 +98,24 @@ class DeletePostView(PermissionRequiredMixin, DeleteView):
         return super().form_valid(form)
 
 
+class NotificationsView(UserPassesTestMixin, TemplateView):
+    template_name = 'website/notifications.html'
+    group_required = ['default', 'sudo']
+
+    def test_func(self):
+        if self.request.user.groups.filter(name__in=self.group_required).exists() and self.request.user.is_authenticated:
+            return True
+        else:
+            return False
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['notifications'] = notifications = Notification.objects.select_related(
+            'friend', 'like', 'dislike', 'comment', 'message').filter(user=self.request.user, is_active=True)
+        log.info(notifications)
+        return context
+
+
 class CommentView(PermissionRequiredMixin, CreateView):
     template_name = 'website/comment.html'
     model = Comment
@@ -124,7 +144,10 @@ class BanUserView(UserPassesTestMixin, TemplateView):
     template_name = 'website/ban_user.html'
 
     def test_func(self):
-        return self.request.user.groups.filter(name='sudo').exists()
+        if self.request.user.groups.filter(name='sudo').exists() and self.request.user.is_authenticated:
+            return True
+        else:
+            return False
 
     def get(self, request, *args: str, **kwargs):
         if self.test_func():
@@ -143,12 +166,14 @@ class BanUserView(UserPassesTestMixin, TemplateView):
         try:
             group = Group.objects.get(name='default')
             group.user_set.remove(user)
+            user.is_active = False
         except:
             pass
 
         try:
             group = Group.objects.get(name='sudo')
             group.user_set.remove(user)
+            user.is_active = False
         except:
             pass
 
@@ -163,7 +188,10 @@ class UnbanUserView(UserPassesTestMixin, TemplateView):
     template_name = 'website/unban_user.html'
 
     def test_func(self):
-        return self.request.user.groups.filter(name='sudo').exists()
+        if self.request.user.groups.filter(name='sudo').exists() and self.request.user.is_authenticated:
+            return True
+        else:
+            return False
 
     def get(self, request, *args: str, **kwargs):
         if self.test_func():
@@ -181,11 +209,61 @@ class UnbanUserView(UserPassesTestMixin, TemplateView):
         user = User.objects.get(pk=self.kwargs['pk'])
         group = Group.objects.get(name='default')
         user.groups.add(group)
+        user.is_active = True
 
         messages.success(self.request, 'User unbanned successfully')
         log.info(
             f'User {user.username} unbanned by {self.request.user.username}')
         return redirect('home')
+
+
+class FriendsView(UserPassesTestMixin, TemplateView):
+    template_name = 'website/friends.html'
+    group_required = ['default', 'sudo']
+
+    def test_func(self):
+        if self.request.user.groups.filter(name__in=self.group_required).exists() and self.request.user.is_authenticated:
+            return True
+        else:
+            return False
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['friends'] = Friend.objects.filter(
+            Q(user=self.request.user) | Q(friend=self.request.user), state='accepted')
+        return context
+
+
+class AddFriendsView(UserPassesTestMixin, TemplateView):
+    template_name = 'website/add_friends.html'
+    group_required = ['default', 'sudo']
+
+    def test_func(self):
+        if self.request.user.groups.filter(name__in=self.group_required).exists() and self.request.user.is_authenticated:
+            return True
+        else:
+            return False
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['persons'] = User.objects.exclude(
+            is_active=False).exclude(id=self.request.user.id)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        friend = User.objects.get(id=request.POST.get('user_id'))
+        if Friend.objects.filter(user=request.user.id, friend=friend).exists() or Friend.objects.filter(user=friend.id, friend=request.user).exists():
+            messages.error(
+                request, f'Your request is already sent to {friend.username}, or {friend.username} sent you a request')
+            return redirect('add_friends')
+        else:
+            Friend.objects.create(user=request.user, friend=friend)
+            Notification.objects.create(
+                notification_type='friend_request', user=friend, friend=Friend.objects.get(user=request.user, friend=friend))
+            messages.success(self.request, 'Friend request sent successfully')
+            log.info(
+                f"User {request.user.username} request {friend.username} as friend")
+            return redirect('home')
 
 
 def postLiked(request, pk):
@@ -230,3 +308,37 @@ def postDisliked(request, pk):
         post.save()
 
     return redirect('home')
+
+
+def aceceptFriendRequest(request, pk, nt_pk):
+    id_friend = Friend.objects.get(id=pk)
+    notification = Notification.objects.get(id=nt_pk)
+    if id_friend:
+        id_friend.state = 'accepted'
+        id_friend.save()
+        notification.is_active = False
+        notification.save()
+        messages.success(request, 'Friend request accepted successfully')
+        log.info(
+            f"User {request.user.username} accepted {id_friend.friend.username} as friend")
+        return redirect('home')
+
+    else:
+        messages.error(request, 'Something went wrong')
+        log.error(f"{request} Something went wrong")
+        return redirect('home')
+
+
+def declineFriendRequest(request, pk):
+    id_friend = Friend.objects.get(id=pk)
+    if id_friend:
+        id_friend.state = 'friend_rejected'
+        messages.success(request, 'Friend request rejected')
+        log.info(
+            f"User {request.user.username} reject {id_friend.friend.username} as friend")
+        return redirect('home')
+
+    else:
+        messages.error(request, 'Something went wrong')
+        log.error(f"{request} Something went wrong")
+        return redirect('home')

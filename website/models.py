@@ -79,6 +79,24 @@ class Friend(models.Model):
         return self.user.username
 
 
+class Like(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.username}: {self.post.title}'
+
+
+class Dislike(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.username}: {self.post.title}'
+
+
 class Notification(models.Model):
     class typeNotification(models.TextChoices):
         FRIEND_REQUEST = 'friend_request'
@@ -87,6 +105,8 @@ class Notification(models.Model):
         FRIEND_BLOCKED = 'friend_blocked'
         MESSAGE_RECEIVED = 'message_received'
         COMMENT_RECEIVED = 'comment_received'
+        LIKE_RECEIVED = 'like_received'
+        DISLIKE_RECEIVED = 'dislike_received'
 
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='user_notification')
@@ -94,28 +114,21 @@ class Notification(models.Model):
     notification_type = models.CharField(
         max_length=20, choices=typeNotification.choices)
 
-    message_id = models.ForeignKey(
+    message = models.ForeignKey(
         Message, on_delete=models.CASCADE, related_name='message_notification', null=True)
 
-    Friend_id = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='friend_notification', null=True)
+    friend = models.ForeignKey(
+        Friend, on_delete=models.CASCADE, related_name='friend_notification', null=True)
+
+    like = models.ForeignKey(
+        Like, on_delete=models.CASCADE, related_name='like_notification', null=True)
+
+    dislike = models.ForeignKey(
+        Dislike, on_delete=models.CASCADE, related_name='dislike_notification', null=True)
+
+    comment = models.ForeignKey(
+        Comment, on_delete=models.CASCADE, related_name='comment_notification', null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
-
-class Like(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f'{self.user.username}: {self.post.title}'
-    
-    
-class Dislike(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return f'{self.user.username}: {self.post.title}'
+    is_active = models.BooleanField(default=True)

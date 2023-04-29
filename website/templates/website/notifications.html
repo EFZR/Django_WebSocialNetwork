@@ -1,0 +1,38 @@
+{% extends 'website/base.html' %}
+{% block title %} Notifications {% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <div>
+      <a class="float-start text-decoration-none" href="{% url 'home' %}">&#9754; Back</a>
+      <h3 class="text-center"><i>Notifications</i></h3>
+    </div>
+  </div>
+  <div class="card-body">
+    <ul class="list-group list-group-flush">
+      {% if notifications %}
+      {% for notification in notifications %}
+      {% if notification.notification_type == "friend_request" %}
+      <li class="list-group-item">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <i class='bx bxs-user-account'></i>
+            <a href="#" class="text-decoration-none">{{notification.friend}} sent you a friend request</a>
+          </div>
+          <div>
+            <a href="{% url 'accept_friend' notification.friend.id notification.id %}" class="btn btn-success btn-sm">Accept <i class='bx bxs-user-check'></i></a>
+            <a href="{% url 'decline_friend' notification.friend.id notification.id %}" class="btn btn-danger btn-sm">Reject <i class='bx bxs-user-x'></i></a>
+          </div>
+        </div>
+      </li>
+      {% endif %}
+      {% endfor %}
+      {% else %}
+      <li class="list-group-item">
+        No Notifications
+      </li>
+      {% endif %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

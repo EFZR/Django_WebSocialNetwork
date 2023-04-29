@@ -13,6 +13,12 @@
           <a class="nav-link" href="{% url 'post' %}">New Post</a>
         </li>
         <li class="nav-item">
+          <a href="{% url 'friends' %}" class="nav-link">Friends</a>
+        </li>
+        <li class="nav-item">
+          <a href="{% url 'notifications' %}" class="nav-link">Notifications</a>
+        </li>
+        <li class="nav-item">
           <a href="{% url 'logout' %}" class="nav-link">Logout</a>
         </li>
         {% else %}
@@ -22,8 +28,14 @@
         {% endif %}
       </ul>
     </div>
-    <button class="btn btn-outline-primary">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+    <div>
+      <h5 class="navbar-brand">Welcome {{request.user}}</h5>
+    </div>
+    {% if user.is_authenticated %}
+    <form class="d-flex">
+      <input class="form-control me-2" type="search" placeholder="Search Friend" aria-label="Search">
+      <button class="btn btn-outline-primary" type="submit">Search</button>
+    </form>
+    {% endif %}
   </div>
 </nav>
