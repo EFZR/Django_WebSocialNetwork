@@ -132,12 +132,17 @@ class CommentView(PermissionRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.author = self.request.user
         form.instance.post = Post.objects.get(pk=self.kwargs['pk'])
+        response = super().form_valid(form)
         post = Post.objects.get(pk=self.kwargs['pk'])
         post.commented += 1
         post.save()
+        author_user = User.objects.get(id=self.kwargs['author'])
+        if author_user != self.request.user:
+            Notification.objects.create(
+                notification_type='comment_received', comment=Comment.objects.last(), user=author_user)
         messages.success(self.request, 'Comment created successfully')
         log.info(f'New comment created by {self.request.user.username}')
-        return super().form_valid(form)
+        return response
 
 
 class BanUserView(UserPassesTestMixin, TemplateView):
@@ -266,7 +271,7 @@ class AddFriendsView(UserPassesTestMixin, TemplateView):
             return redirect('home')
 
 
-def postLiked(request, pk):
+def postLiked(request, pk, author):
     post = Post.objects.get(id=pk)
     if Like.objects.select_related('user').filter(user=request.user, post=post):
         Like.objects.select_related('user').filter(
@@ -281,14 +286,17 @@ def postLiked(request, pk):
         post.liked += 1
         post.save()
     else:
-        Like.objects.create(user=request.user, post=post)
+        like = Like.objects.create(user=request.user, post=post)
+        author_user = User.objects.get(id=author)
+        Notification.objects.create(
+            notification_type='like_received', like=like, user=author_user)
         post.liked += 1
         post.save()
 
     return redirect('home')
 
 
-def postDisliked(request, pk):
+def postDisliked(request, pk, author):
     post = Post.objects.get(id=pk)
     if Dislike.objects.select_related('user').filter(user=request.user, post=post):
         Dislike.objects.select_related('user').filter(
@@ -303,7 +311,10 @@ def postDisliked(request, pk):
         post.disliked += 1
         post.save()
     else:
-        Dislike.objects.create(user=request.user, post=post)
+        dislike = Dislike.objects.create(user=request.user, post=post)
+        author_user = User.objects.get(id=author)
+        Notification.objects.create(
+            notification_type='dislike_received', dislike=dislike, user=author_user)
         post.disliked += 1
         post.save()
 
@@ -318,6 +329,8 @@ def aceceptFriendRequest(request, pk, nt_pk):
         id_friend.save()
         notification.is_active = False
         notification.save()
+        Notification.objects.create(
+            notification_type='friend_accepted', friend=id_friend, user=id_friend.user)
         messages.success(request, 'Friend request accepted successfully')
         log.info(
             f"User {request.user.username} accepted {id_friend.friend.username} as friend")
@@ -329,10 +342,16 @@ def aceceptFriendRequest(request, pk, nt_pk):
         return redirect('home')
 
 
-def declineFriendRequest(request, pk):
+def declineFriendRequest(request, pk, nt_pk):
     id_friend = Friend.objects.get(id=pk)
+    notification = Notification.objects.get(id=nt_pk)
     if id_friend:
-        id_friend.state = 'friend_rejected'
+        id_friend.state = 'rejected'
+        id_friend.save()
+        notification.is_active = False
+        notification.save()
+        Notification.objects.create(
+            notification_type='friend_rejected', friend=id_friend, user=id_friend.user)
         messages.success(request, 'Friend request rejected')
         log.info(
             f"User {request.user.username} reject {id_friend.friend.username} as friend")
@@ -342,3 +361,14 @@ def declineFriendRequest(request, pk):
         messages.error(request, 'Something went wrong')
         log.error(f"{request} Something went wrong")
         return redirect('home')
+
+
+def checkedNotification(request, pk):
+    notification = Notification.objects.get(id=pk)
+    if notification:
+        notification.is_active = False
+        notification.save()
+        return redirect('notifications')
+    else:
+        messages.error(request, 'Something went wrong')
+        return redirect('notifications')

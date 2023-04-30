@@ -11,9 +11,10 @@ urlpatterns = [
     path('accept_friend/<int:pk>/<int:nt_pk>/', views.aceceptFriendRequest, name='accept_friend'),
     path('decline_friend/<int:pk>/<int:nt_pk>/', views.declineFriendRequest, name='decline_friend'),
     path('notifications/', views.NotificationsView.as_view(), name='notifications'),
+    path('checked_notification/<int:pk>/', views.checkedNotification, name='checked_notification'),
     path('ban_user/<int:pk>/', views.BanUserView.as_view(), name='ban_user'),
     path('unban_user/<int:pk>/', views.UnbanUserView.as_view(), name='unban_user'),
-    path('like/<int:pk>/', views.postLiked, name='like'),
-    path('dislike/<int:pk>/', views.postDisliked, name='dislike'),
-    path('comment/<int:pk>/', views.CommentView.as_view(), name='comment'),
+    path('like/<int:pk>/<int:author>/', views.postLiked, name='like'),
+    path('dislike/<int:pk>/<int:author>/', views.postDisliked, name='dislike'),
+    path('comment/<int:pk>/<int:author>/', views.CommentView.as_view(), name='comment'),
 ]

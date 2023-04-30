@@ -20,8 +20,80 @@
             <a href="#" class="text-decoration-none">{{notification.friend}} sent you a friend request</a>
           </div>
           <div>
-            <a href="{% url 'accept_friend' notification.friend.id notification.id %}" class="btn btn-success btn-sm">Accept <i class='bx bxs-user-check'></i></a>
-            <a href="{% url 'decline_friend' notification.friend.id notification.id %}" class="btn btn-danger btn-sm">Reject <i class='bx bxs-user-x'></i></a>
+            <a href="{% url 'accept_friend' notification.friend.id notification.id %}"
+              class="btn btn-success btn-sm">Accept <i class='bx bxs-user-check'></i></a>
+            <a href="{% url 'decline_friend' notification.friend.id notification.id %}"
+              class="btn btn-danger btn-sm">Reject <i class='bx bxs-user-x'></i></a>
+          </div>
+        </div>
+      </li>
+      {% endif %}
+      {% if notification.notification_type == "friend_accepted" %}
+      <li class="list-group-item">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <i class='bx bxs-user-account'></i>
+            <a href="#" class="text-decoration-none">{{notification.friend}} accepted your friend request</a>
+          </div>
+          <div>
+            <a href="{% url 'checked_notification' notification.id %}" class="btn btn-primary btn-sm">Friends <i
+                class='bx bxs-user-check'></i></a>
+          </div>
+        </div>
+      </li>
+      {% endif %}
+      {% if notification.notification_type == "friend_rejected" %}
+      <li class="list-group-item">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <i class='bx bxs-user-account'></i>
+            <a href="#" class="text-decoration-none">{{notification.friend}} rejected your friend request</a>
+          </div>
+          <div>
+            <a href="{% url 'checked_notification' notification.id %}" class="btn btn-danger btn-sm">Rejected <i
+                class='bx bxs-user-x'></i></a>
+          </div>
+        </div>
+      </li>
+      {% endif %}
+      {% if notification.notification_type == "comment_received" %}
+      <li class="list-group-item">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <i class='bx bxs-comment-detail' style="color: green;"></i>
+            <a href="#" class="text-decoration-none">{{notification.comment.author}} commented on your post</a>
+          </div>
+          <div>
+            <a href="{% url 'checked_notification' notification.id %}" class="btn btn-outline-primary btn-sm"><i
+                class='bx bx-check-circle'></i></a>
+          </div>
+        </div>
+      </li>
+      {% endif %}
+      {% if notification.notification_type == "like_received" %}
+      <li class="list-group-item">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <i class='bx bxs-heart' style="color: red;"></i>
+            <a href="#" class="text-decoration-none">{{notification.like.user}} liked your post</a>
+          </div>
+          <div>
+            <a href="{% url 'checked_notification' notification.id %}" class="btn btn-outline-primary btn-sm"><i
+                class='bx bx-check-circle'></i></a>
+          </div>
+        </div>
+      </li>
+      {% endif %}
+      {% if notification.notification_type == "dislike_received" %}
+      <li class="list-group-item">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <i class='bx bxs-dislike' style="color: chocolate;"></i>
+            <a href="#" class="text-decoration-none">{{notification.dislike.user}} disliked your post</a>
+          </div>
+          <div>
+            <a href="{% url 'checked_notification' notification.id %}" class="btn btn-outline-primary btn-sm"><i
+                class='bx bx-check-circle'></i></a>
           </div>
         </div>
       </li>

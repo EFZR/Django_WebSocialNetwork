@@ -36,13 +36,13 @@
     <div class="d-flex flex-row justify-content-between">
       <div class="d-flex flex-row">
         <div class="d-flex flex-column">
-          <a href="{% url 'like' post.id %}" class="btn btn-outline-primary btn-sm {% if post.like %}active{% endif %}">
+          <a href="{% url 'like' post.id post.author.id %}" class="btn btn-outline-primary btn-sm {% if post.like %}active{% endif %}">
             <i class="bx bxs-like"></i>
           </a>
           <span class="badge bg-primary">{{ post.liked }}</span>
         </div>
         <div class="d-flex flex-column">
-          <a href="{% url 'dislike' post.id %}"
+          <a href="{% url 'dislike' post.id post.author.id %}"
             class="btn btn-outline-danger btn-sm {% if post.dislike %}active{% endif %}">
             <i class="bx bxs-dislike"></i>
           </a>
@@ -50,7 +50,7 @@
         </div>
       </div>
       <div class="d-flex flex-column">
-        <a href="{% url 'comment' post.id %}" class="btn btn-outline-success btn-sm">
+        <a href="{% url 'comment' post.id post.author.id %}" class="btn btn-outline-success btn-sm">
           <i class="bx bxs-comment-detail"></i>
         </a>
         <span class="badge bg-success">{{ post.commented }}</span>
