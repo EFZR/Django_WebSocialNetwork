@@ -6,7 +6,6 @@ log.basicConfig(format='%(asctime)s: %(levelname)s [%(filename)s:%(lineno)s] %(m
                 encoding='UTF-8',
                 handlers=[
                     log.FileHandler('Logging/capa_datos.log'),
-                    log.StreamHandler()
                 ])
 
 

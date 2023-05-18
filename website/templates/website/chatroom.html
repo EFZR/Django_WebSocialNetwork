@@ -1,0 +1,44 @@
+{% extends 'website/base.html' %}
+{% load static %}
+{% block title %} Chat {% endblock %}
+{% block content %}
+<form method="POST">
+  <div class="card">
+    <div class="card-header">
+      <a class="float-start text-decoration-none" href="{% url 'home' %}">&#9754; Back</a>
+    </div>
+    <div class="card-body">
+      <div id="chat-box">
+        {% if chats %}
+        {% for chat in chats %}
+        <div class="card border-warning mt-3 mb-3">
+          <div class="card-header">
+            <b>{{chat.author}}</b><span class="text-muted float-end">{{chat.created_at|date:"d M, Y h:i"}}</span>
+          </div>
+          <div class="card-body">
+            <p class="card-text">{{chat.content}}</p>
+          </div>
+        </div>
+        {% endfor %}
+        {% else %}
+      </div>
+      <div id="chat-box">
+        <p class="text-center">No Messages yet!</p>
+      </div>
+      {% endif %}
+    </div>
+    <div class="card-footer row">
+      <div class="col-11">
+        <input type="text" id="message-input" class="form-control">
+      </div>
+      <div class="col-1">
+        <button type="submit" id="send-btn-input" class="btn btn-primary">Post</button>
+      </div>
+    </div>
+  </div>
+</form>
+
+{{ chatroom_id|json_script:"chatroom" }}
+{{ request.user.username|json_script:"user-username" }}
+<script src="{% static 'js/chatroom.js' | script_tag %}"></script>
+{% endblock %}

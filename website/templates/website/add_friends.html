@@ -17,7 +17,7 @@
           <form method="post" action="{% url 'add_friends' %}">
             {% csrf_token %}
             <input type="hidden" name="user_id" value="{{person.id}}">
-            <input type="submit" value="Add" class="btn btn-success btn-sm">
+            <input type="submit" value="+" class="btn btn-outline-primary btn-sm">
           </form>
         </div>
       </li>

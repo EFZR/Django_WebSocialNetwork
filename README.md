@@ -14,6 +14,7 @@
   3. python -m pip install django-bootstrap-v5
   4. python -m pip install -U channels["daphne"]
   5. python -m pip install Faker
+  6. python -m pip install -U 'Twisted[tls,http2]'
 
 4. Open the __Django_WebSocialNetwork__
   1. cd __Django_WebSocialNetwork__

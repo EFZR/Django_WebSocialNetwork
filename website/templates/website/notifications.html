@@ -33,7 +33,9 @@
         <div class="d-flex justify-content-between align-items-center">
           <div>
             <i class='bx bxs-user-account'></i>
-            <a href="#" class="text-decoration-none">{{notification.friend}} accepted your friend request</a>
+            <a href="#" class="text-decoration-none">
+              Friend request sent to {{notification.friend}} has been accepted
+            </a>
           </div>
           <div>
             <a href="{% url 'checked_notification' notification.id %}" class="btn btn-primary btn-sm">Friends <i

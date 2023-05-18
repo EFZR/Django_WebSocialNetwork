@@ -1,12 +1,12 @@
 from django.urls import reverse_lazy
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.views.generic.base import TemplateView
 from django.views.generic.edit import FormView, CreateView, UpdateView, DeleteView
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin, PermissionRequiredMixin
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from website.forms import *
 from website.models import *
 from Logging.Logger_Base import log
@@ -234,7 +234,7 @@ class FriendsView(UserPassesTestMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['friends'] = Friend.objects.filter(
+        context['friends'] = x = Friend.objects.filter(
             Q(user=self.request.user) | Q(friend=self.request.user), state='accepted')
         return context
 
@@ -262,13 +262,33 @@ class AddFriendsView(UserPassesTestMixin, TemplateView):
                 request, f'Your request is already sent to {friend.username}, or {friend.username} sent you a request')
             return redirect('add_friends')
         else:
-            Friend.objects.create(user=request.user, friend=friend)
+            chatroom = ChatRoom.objects.create(
+                name=f'{request.user.username} and {friend.username} chatroom',
+                type='private',
+            )
+            Friend.objects.create(user=request.user, friend=friend, chatroom=chatroom)
             Notification.objects.create(
                 notification_type='friend_request', user=friend, friend=Friend.objects.get(user=request.user, friend=friend))
             messages.success(self.request, 'Friend request sent successfully')
             log.info(
                 f"User {request.user.username} request {friend.username} as friend")
             return redirect('home')
+        
+class ChatroomView(UserPassesTestMixin, TemplateView):
+    template_name = 'website/chatroom.html'
+    group_required = ['default', 'sudo']
+
+    def test_func(self):
+        if self.request.user.groups.filter(name__in=self.group_required).exists() and self.request.user.is_authenticated:
+            return True
+        else:
+            return False
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['chatroom'] = chatroom = ChatRoom.objects.get(id=self.kwargs['chatroom_id'])
+        context['chats'] = Message.objects.all().filter(chatroom=chatroom)
+        return context
 
 
 def postLiked(request, pk, author):
@@ -372,3 +392,9 @@ def checkedNotification(request, pk):
     else:
         messages.error(request, 'Something went wrong')
         return redirect('notifications')
+
+
+def chatroom(request, chatroom_id):
+    return render(request, 'website/chatroom.html', {
+        'chatroom_id': chatroom_id
+    })

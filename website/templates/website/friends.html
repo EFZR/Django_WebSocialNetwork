@@ -13,21 +13,21 @@
     <ul class="list-group list-group-flush">
       {% if friends %}
       {% for friend in friends %}
-      {% if friend.friend == request.user %}
       <li class="list-group-item">
         <div class="d-flex justify-content-between align-items-center">
-          <a href="#" class=" text-decoration-none">{{friend.user}}</a>
-          <a href="#" class="btn btn-danger btn-sm">Remove</a>
+          <a href="#" class=" text-decoration-none">
+            {% if friend.friend == request.user %}
+            {{friend.user}}
+            {% else %}
+            {{friend.friend}}
+            {% endif %}
+          </a>
+          <div>
+            <a href="#" class="btn btn-outline-danger btn-sm"><i class='bx bx-x'></i></a>
+            <a href="{% url 'chat' friend.chatroom.id %}" class="btn btn-outline-success btn-sm"><i class='bx bxs-chat'></i></a>
+          </div>
         </div>
       </li>
-      {% else %}
-      <li class="list-group-item">
-        <div class="d-flex justify-content-between align-items-center">
-          <a href="#" class=" text-decoration-none">{{friend.friend}}</a>
-          <a href="#" class="btn btn-danger btn-sm">Remove</a>
-        </div>
-      </li>
-      {% endif %}
       {% endfor %}
       {% else %}
       <li class="list-group-item">
