@@ -266,14 +266,16 @@ class AddFriendsView(UserPassesTestMixin, TemplateView):
                 name=f'{request.user.username} and {friend.username} chatroom',
                 type='private',
             )
-            Friend.objects.create(user=request.user, friend=friend, chatroom=chatroom)
+            Friend.objects.create(
+                user=request.user, friend=friend, chatroom=chatroom)
             Notification.objects.create(
                 notification_type='friend_request', user=friend, friend=Friend.objects.get(user=request.user, friend=friend))
             messages.success(self.request, 'Friend request sent successfully')
             log.info(
                 f"User {request.user.username} request {friend.username} as friend")
             return redirect('home')
-        
+
+
 class ChatroomView(UserPassesTestMixin, TemplateView):
     template_name = 'website/chatroom.html'
     group_required = ['default', 'sudo']
@@ -286,7 +288,8 @@ class ChatroomView(UserPassesTestMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['chatroom'] = chatroom = ChatRoom.objects.get(id=self.kwargs['chatroom_id'])
+        context['chatroom'] = chatroom = ChatRoom.objects.get(
+            id=self.kwargs['chatroom_id'])
         context['chats'] = Message.objects.all().filter(chatroom=chatroom)
         return context
 
@@ -301,8 +304,11 @@ def postLiked(request, pk, author):
     elif Dislike.objects.select_related('user').filter(user=request.user, post=post):
         Dislike.objects.select_related('user').filter(
             user=request.user, post=post).delete()
+        like = Like.objects.create(user=request.user, post=post)
+        author_user = User.objects.get(id=author)
+        Notification.objects.create(
+            notification_type='like_received', like=like, user=author_user)
         post.disliked -= 1
-        Like.objects.create(user=request.user, post=post)
         post.liked += 1
         post.save()
     else:
@@ -326,8 +332,11 @@ def postDisliked(request, pk, author):
     elif Like.objects.select_related('user').filter(user=request.user, post=post):
         Like.objects.select_related('user').filter(
             user=request.user, post=post).delete()
+        dislike = Dislike.objects.create(user=request.user, post=post)
+        author_user = User.objects.get(id=author)
+        Notification.objects.create(
+            notification_type='dislike_received', dislike=dislike, user=author_user)
         post.liked -= 1
-        Dislike.objects.create(user=request.user, post=post)
         post.disliked += 1
         post.save()
     else:

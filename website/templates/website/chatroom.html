@@ -5,34 +5,30 @@
 <form method="POST">
   <div class="card">
     <div class="card-header">
-      <a class="float-start text-decoration-none" href="{% url 'home' %}">&#9754; Back</a>
+      <h4 class="text-center"><i>{{chatroom.name}}</i></h4>
     </div>
-    <div class="card-body">
-      <div id="chat-box">
-        {% if chats %}
-        {% for chat in chats %}
-        <div class="card border-warning mt-3 mb-3">
-          <div class="card-header">
-            <b>{{chat.author}}</b><span class="text-muted float-end">{{chat.created_at|date:"d M, Y h:i"}}</span>
-          </div>
-          <div class="card-body">
-            <p class="card-text">{{chat.content}}</p>
-          </div>
+    <div class="card-body" id="chat-box">
+      {% if chats %}
+      {% for chat in chats %}
+      <div class="card border-warning mt-3 mb-3">
+        <div class="card-header">
+          <b>{{chat.author}}</b><span class="text-muted float-end">{{chat.created_at|date:"d M, Y h:i"}}</span>
         </div>
-        {% endfor %}
-        {% else %}
+        <div class="card-body">
+          <p class="card-text">{{chat.content}}</p>
+        </div>
       </div>
-      <div id="chat-box">
-        <p class="text-center">No Messages yet!</p>
-      </div>
+      {% endfor %}
+      {% else %}
+      <p class="text-center">No Messages yet!</p>
       {% endif %}
     </div>
-    <div class="card-footer row">
-      <div class="col-11">
-        <input type="text" id="message-input" class="form-control">
-      </div>
-      <div class="col-1">
-        <button type="submit" id="send-btn-input" class="btn btn-primary">Post</button>
+    <div class="card-footer">
+      <div class="d-flex justify-content-around">
+        <div class="col-10">
+          <input type="text" id="message-input" class="form-control" placeholder="...">
+        </div>
+        <button type="submit" id="send-btn-input" class="btn btn-primary btn-sm"><i class='bx bx-send'></i></button>
       </div>
     </div>
   </div>

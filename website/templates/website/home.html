@@ -4,7 +4,7 @@
 {% block content %}
 {% if posts %}
 {% for post in posts %}
-<div class="card mt-2">
+<div class="card mb-1">
   <div
     class="card-header {% if not post.author|has_group:'default' and not post.author|has_group:'sudo' %} bg-warning {% endif %}">
     <b>@{{ post.author.username }}</b>

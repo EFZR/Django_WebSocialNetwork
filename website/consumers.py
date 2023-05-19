@@ -57,7 +57,7 @@ class ChatFriendConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'message': message,
             'username': username,
-            'date': datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            'date': datetime.datetime.now().strftime("%d %h, %Y %H:%M")
         }))
 
     @database_sync_to_async
