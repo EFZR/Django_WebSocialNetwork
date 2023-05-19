@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from website.models import Post, Comment, ChatRoom, Message, Friend, Notification
+from website.models import Post, Comment
 
 
 class RegisterForm(UserCreationForm):
