@@ -57,3 +57,10 @@ A greet from Honduras and have a nice day, don't forget to leave your star.
 1. Create a Friend
 1. Chat with any user in the friend section
 
+
+## Future Features
+
+- [ ] Add a post picture feature
+- [ ] Make in real time the post, comment and like section
+- [ ] Receive a notification when a friend sends a message and is not in the chatroom
+- [ ] Add a feature to create a group chat
